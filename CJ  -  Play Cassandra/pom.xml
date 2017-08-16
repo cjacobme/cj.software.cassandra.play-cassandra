@@ -1,8 +1,43 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>cj.software.cassandra</groupId>
-  <artifactId>play-cassandra</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>CJ  -  Play Cassandra</name>
-  <description>Some experiments with Apache Cassandra</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>cj.software</groupId>
+		<artifactId>parent</artifactId>
+		<version>1-SNAPSHOT</version>
+	</parent>
+
+	<groupId>cj.software.cassandra</groupId>
+	<artifactId>play-cassandra</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>CJ  -  Play Cassandra</name>
+	<description>Some experiments with Apache Cassandra</description>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<datastax.version>3.3.0</datastax.version>
+		<guava.version>23.0</guava.version>
+		<slf4j.version>1.7.25</slf4j.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+			<version>${datastax.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+	</dependencies>
 </project>
