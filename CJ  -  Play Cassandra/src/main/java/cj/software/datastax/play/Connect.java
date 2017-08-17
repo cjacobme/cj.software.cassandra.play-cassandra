@@ -1,25 +1,29 @@
 package cj.software.datastax.play;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Metadata;
 
 public class Connect
 {
-	private Logger logger = LoggerFactory.getLogger(Connect.class);
+	private Logger logger = LogManager.getFormatterLogger();
 
 	public static void main(String[] pArgs)
 	{
 		Connect lConnect = new Connect();
-		lConnect.connectToHotel();
+		lConnect.displayClusterInfos();
 	}
 
-	private void connectToHotel()
+	private void displayClusterInfos()
 	{
-		try (Cluster lCluster = Cluster.builder().addContactPoint("localhost").build())
+		String lHost = System.getProperty("host");
+		logger.info("connecting to \"%s\"", lHost);
+		try (Cluster lCluster = Cluster.builder().addContactPoint(lHost).build())
 		{
-			logger.info("connected");
+			Metadata lMeta = lCluster.getMetadata();
+			logger.info("Connected to cluster \"%s\" meta \"%s\"", lCluster.getClusterName(), lMeta.getClusterName());
 		}
 	}
 }
