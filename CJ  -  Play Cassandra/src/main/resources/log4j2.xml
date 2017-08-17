@@ -3,7 +3,7 @@
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT">
             <PatternLayout
-              pattern="%d %-5level [%t] %logger{36} - %msg%n%throwable"/>
+              pattern="%d %-5level [%t] %logger{0} - %msg%n%throwable"/>
         </Console>
     </Appenders>
     <Loggers>
