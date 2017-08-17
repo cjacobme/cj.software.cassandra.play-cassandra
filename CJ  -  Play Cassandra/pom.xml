@@ -21,6 +21,7 @@
 		<datastax.version>3.3.0</datastax.version>
 		<guava.version>23.0</guava.version>
 		<slf4j.version>1.7.25</slf4j.version>
+		<log4j2.version>2.8.2</log4j2.version>
 	</properties>
 
 	<dependencies>
@@ -28,12 +29,6 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 			<version>${datastax.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -44,6 +39,16 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
 		</dependency>
 	</dependencies>
 </project>
