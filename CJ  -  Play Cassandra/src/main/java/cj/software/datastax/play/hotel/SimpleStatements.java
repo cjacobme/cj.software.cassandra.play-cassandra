@@ -1,5 +1,7 @@
 package cj.software.datastax.play.hotel;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,6 +13,10 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.UDTValue;
+import com.datastax.driver.core.UserType;
+import com.datastax.driver.core.querybuilder.BuiltStatement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 public class SimpleStatements
 {
@@ -55,6 +61,9 @@ public class SimpleStatements
 				this.insertHotelPrepared(lSession, lPrepInsert, pHotelId, pName, pPhone);
 				PreparedStatement lPrepSelect = lSession.prepare("SELECT * FROM hotels WHERE id = ?");
 				this.listHotelsPrepared(lSession, lPrepSelect, pHotelId);
+
+				this.insertByQueryBuilder(lCluster, lSession, pHotelId, pName);
+				this.selectByQueryBuilder(lCluster, lSession, pHotelId);
 			}
 		}
 	}
@@ -64,24 +73,14 @@ public class SimpleStatements
 		String lInsert = "INSERT INTO hotels (id, name, phone) VALUES (?, ?, ?)";
 		SimpleStatement lInsertStmt = new SimpleStatement(lInsert, pHotelId, pName, pPhone);
 		ResultSet lInsertRS = pSession.execute(lInsertStmt);
-		logger.info("Insert ResultSet: %s", lInsertRS);
-		logger.info("Insert was applied: %s", String.valueOf(lInsertRS.wasApplied()));
-		ExecutionInfo lExecutionInfo = lInsertRS.getExecutionInfo();
-		logger.info("Execution Info: %s", lExecutionInfo);
-		logger.info("Incoming Payload: %s", lExecutionInfo.getIncomingPayload());
+		this.protocolResultSet(lInsertRS, "Insert");
 	}
 
 	private void listHotels(Session pSession)
 	{
 		SimpleStatement lHotelSelect = new SimpleStatement("select * from hotels");
 		ResultSet lRS = pSession.execute(lHotelSelect);
-		for (Row bRow : lRS.all())
-		{
-			String lId = bRow.getString("id");
-			String lName = bRow.getString("name");
-			String lPhone = bRow.getString("phone");
-			logger.info("found hotel id %s, name \"%s\", phone %s", lId, lName, lPhone);
-		}
+		this.iterate(lRS, "List");
 	}
 
 	private void insertHotelPrepared(
@@ -97,23 +96,79 @@ public class SimpleStatements
 		logger.info("insert via prepared %s", lHotelId);
 		BoundStatement lBound = pStmt.bind(lHotelId, lName, lPhone);
 		ResultSet lBoundRS = pSession.execute(lBound);
-		logger.info("Bound ResultSet: %s", lBoundRS);
-		logger.info("Bound was applied: %s", String.valueOf(lBoundRS.wasApplied()));
-		ExecutionInfo lExecutionInfo = lBoundRS.getExecutionInfo();
-		logger.info("Bounc Execution Info: %s", lExecutionInfo);
-		logger.info("Bound Incoming Payload: %s", lExecutionInfo.getIncomingPayload());
+		this.protocolResultSet(lBoundRS, "Bound");
 	}
 
 	private void listHotelsPrepared(Session pSession, PreparedStatement pStmt, String pHotelId)
 	{
 		BoundStatement lBound = pStmt.bind(pHotelId);
 		ResultSet lRS = pSession.execute(lBound);
-		for (Row bRow : lRS.all())
+		this.iterate(lRS, "Prepared");
+	}
+
+	private void insertByQueryBuilder(Cluster pCluster, Session pSession, String pHotelId, String pName)
+	{
+		//@formatter:off
+		UserType lUserType = pCluster
+				.getMetadata()
+				.getKeyspace("hotel")
+				.getUserType("address");
+		UDTValue lAddress = lUserType.newValue()
+				.setString("street", "Düsselring")
+				.setString("city", "Mettmann")
+				.setString("postal_code","40822");
+		
+		BuiltStatement lInsert = QueryBuilder
+				.insertInto("hotels")
+				.value("id", pHotelId)
+				.value("name", pName)
+				.value("address", lAddress);
+		//@formatter:on
+		ResultSet lRS = pSession.execute(lInsert);
+		this.protocolResultSet(lRS, "QueryBuilder");
+	}
+
+	private void selectByQueryBuilder(Cluster pCluster, Session pSession, String pHotelId)
+	{
+		//@formatter:off
+		BuiltStatement lSelect = QueryBuilder
+				.select()
+				.all()
+				.from("hotels")
+				.where(eq("id", pHotelId));
+		ResultSet lRS = pSession.execute(lSelect);
+		//@formatter:on
+		this.iterate(lRS, "QueryBuilder");
+	}
+
+	private void protocolResultSet(ResultSet pRS, String pScenario)
+	{
+		logger.info("%s: ResultSet: %s", pScenario, pRS);
+		logger.info("%s: was applied: %s", pScenario, String.valueOf(pRS.wasApplied()));
+		ExecutionInfo lExecutionInfo = pRS.getExecutionInfo();
+		logger.info("%s: Execution Info: %s", pScenario, lExecutionInfo);
+		logger.info("%s: Incoming Payload: %s", pScenario, lExecutionInfo.getIncomingPayload());
+	}
+
+	private void iterate(ResultSet pRS, String pScenario)
+	{
+		for (Row bRow : pRS.all())
 		{
 			String lId = bRow.getString("id");
 			String lName = bRow.getString("name");
 			String lPhone = bRow.getString("phone");
-			logger.info("found by bound stmt: hotel id %s, name \"%s\", phone %s", lId, lName, lPhone);
+			UDTValue lAddress = bRow.getUDTValue("address");
+			logger.info("%s: found hotel id %s, name \"%s\", phone %s", pScenario, lId, lName, lPhone);
+			if (lAddress != null)
+			{
+				String lStreet = lAddress.getString("street");
+				String lCity = lAddress.getString("city");
+				String lStateOrProvince = lAddress.getString("state_or_province");
+				String lPostalCode = lAddress.getString("postal_code");
+				String lCountry = lAddress.getString("country");
+				logger.info("%s: Hotel's address is Street %s City %s State %s ZIP-Code %s Country %s", pScenario,
+						lStreet, lCity, lStateOrProvince, lPostalCode, lCountry);
+			}
 		}
 	}
 }
