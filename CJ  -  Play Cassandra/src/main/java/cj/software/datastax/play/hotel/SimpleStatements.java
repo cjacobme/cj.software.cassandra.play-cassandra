@@ -25,19 +25,19 @@ public class SimpleStatements
 	public static void main(String[] pArgs)
 	{
 		SimpleStatements lInstance = new SimpleStatements();
-		lInstance.insertHotel(pArgs);
+		lInstance.doSomeThings(pArgs);
 	}
 
-	private void insertHotel(String[] pArgs)
+	private void doSomeThings(String[] pArgs)
 	{
 		if (pArgs.length != 3)
 		{
 			throw new IllegalArgumentException("Usage: " + SimpleStatements.class.getName() + " HotelId Name Phone");
 		}
-		this.insertHotel(pArgs[0], pArgs[1], pArgs[2]);
+		this.doSomeThings(pArgs[0], pArgs[1], pArgs[2]);
 	}
 
-	private void insertHotel(String pHotelId, String pName, String pPhone)
+	private void doSomeThings(String pHotelId, String pName, String pPhone)
 	{
 		String lHostname = System.getProperty("host");
 		if (lHostname == null)
