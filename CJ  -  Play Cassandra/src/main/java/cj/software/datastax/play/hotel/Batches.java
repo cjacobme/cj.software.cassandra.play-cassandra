@@ -39,6 +39,8 @@ public class Batches
 			{
 				this.logger.info("session opened, now start to play around");
 				this.insertHotelAndPoi(lSession, "40822", "Luisenhof", "02104-123454321", "Neanderthalmuseum");
+				this.insertHotelAndPoi(lSession, "40822", "Luisenhof", "02104-123454321", "Laubfroschoper");
+				this.insertHotelAndPoi(lSession, "40822", "Luisenhof", "02104-123454321", "Lambertuskirche");
 			}
 		}
 	}
@@ -54,12 +56,17 @@ public class Batches
 		SimpleStatement lInsertHotel = new SimpleStatement(
 				"INSERT INTO hotels (id, name, phone) VALUES (?, ?, ?)",
 				pHotelId, pHotelName, pHotelPhone);
+		String lUpdateString = String.format(
+				"UPDATE hotels SET pois = pois + {'%s'} WHERE ID = '%s'",
+				pPoiName, pHotelId);
+		SimpleStatement lUpdatePoisOfHotel = new SimpleStatement (lUpdateString);
 		SimpleStatement lInsertHotelPoi = new SimpleStatement(
 				"INSERT INTO hotels_by_poi (poi_name, hotel_id, name, phone) VALUES (?, ?, ?, ?)",
 				pPoiName, pHotelId, pHotelName, pHotelPhone);
 		//@formatter:on
 		BatchStatement lHotelBatch = new BatchStatement();
 		lHotelBatch.add(lInsertHotel);
+		lHotelBatch.add(lUpdatePoisOfHotel);
 		lHotelBatch.add(lInsertHotelPoi);
 		this.logger.info("INSERT HOTEL (%s, %s, %s) AND ASSIGN TO POI %s...", pHotelId, pHotelName, pHotelPhone,
 				pPoiName);
