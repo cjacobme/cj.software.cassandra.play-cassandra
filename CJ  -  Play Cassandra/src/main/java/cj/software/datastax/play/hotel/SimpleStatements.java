@@ -45,14 +45,14 @@ public class SimpleStatements
 			throw new IllegalStateException("System Property \"host\" not set");
 		}
 
-		logger.info("connecting to %s...", lHostname);
+		this.logger.info("connecting to %s...", lHostname);
 		try (Cluster lCluster = Cluster.builder().addContactPoint(lHostname).build())
 		{
 			String lKeyspaceName = "hotel";
-			logger.info("connected! now open session on keyspace %s", lKeyspaceName);
+			this.logger.info("connected! now open session on keyspace %s", lKeyspaceName);
 			try (Session lSession = lCluster.connect(lKeyspaceName))
 			{
-				logger.info("session opened, now insert hotel id \"%s\"", pHotelId);
+				this.logger.info("session opened, now insert hotel id \"%s\"", pHotelId);
 				this.insertHotel(lSession, pHotelId, pName, pPhone);
 				this.listHotels(lSession);
 
@@ -64,6 +64,8 @@ public class SimpleStatements
 
 				this.insertByQueryBuilder(lCluster, lSession, pHotelId, pName);
 				this.selectByQueryBuilder(lCluster, lSession, pHotelId);
+
+				this.playWithExists(lSession);
 			}
 		}
 	}
@@ -93,7 +95,7 @@ public class SimpleStatements
 		String lHotelId = pHotelId + ".wxyz";
 		String lName = pName + "abc";
 		String lPhone = pPhone + "-123";
-		logger.info("insert via prepared %s", lHotelId);
+		this.logger.info("insert via prepared %s", lHotelId);
 		BoundStatement lBound = pStmt.bind(lHotelId, lName, lPhone);
 		ResultSet lBoundRS = pSession.execute(lBound);
 		this.protocolResultSet(lBoundRS, "Bound");
@@ -143,11 +145,11 @@ public class SimpleStatements
 
 	private void protocolResultSet(ResultSet pRS, String pScenario)
 	{
-		logger.info("%s: ResultSet: %s", pScenario, pRS);
-		logger.info("%s: was applied: %s", pScenario, String.valueOf(pRS.wasApplied()));
+		this.logger.info("%s: ResultSet: %s", pScenario, pRS);
+		this.logger.info("%s: was applied: %s", pScenario, String.valueOf(pRS.wasApplied()));
 		ExecutionInfo lExecutionInfo = pRS.getExecutionInfo();
-		logger.info("%s: Execution Info: %s", pScenario, lExecutionInfo);
-		logger.info("%s: Incoming Payload: %s", pScenario, lExecutionInfo.getIncomingPayload());
+		this.logger.info("%s: Execution Info: %s", pScenario, lExecutionInfo);
+		this.logger.info("%s: Incoming Payload: %s", pScenario, lExecutionInfo.getIncomingPayload());
 	}
 
 	private void iterate(ResultSet pRS, String pScenario)
@@ -158,7 +160,7 @@ public class SimpleStatements
 			String lName = bRow.getString("name");
 			String lPhone = bRow.getString("phone");
 			UDTValue lAddress = bRow.getUDTValue("address");
-			logger.info("%s: found hotel id %s, name \"%s\", phone %s", pScenario, lId, lName, lPhone);
+			this.logger.info("%s: found hotel id %s, name \"%s\", phone %s", pScenario, lId, lName, lPhone);
 			if (lAddress != null)
 			{
 				String lStreet = lAddress.getString("street");
@@ -166,9 +168,34 @@ public class SimpleStatements
 				String lStateOrProvince = lAddress.getString("state_or_province");
 				String lPostalCode = lAddress.getString("postal_code");
 				String lCountry = lAddress.getString("country");
-				logger.info("%s: Hotel's address is Street %s City %s State %s ZIP-Code %s Country %s", pScenario,
+				this.logger.info("%s: Hotel's address is Street %s City %s State %s ZIP-Code %s Country %s", pScenario,
 						lStreet, lCity, lStateOrProvince, lPostalCode, lCountry);
 			}
 		}
+	}
+
+	private void playWithExists(Session pSession)
+	{
+		SimpleStatement lDelete = new SimpleStatement("DELETE FROM hotels WHERE ID = ?", "ABC123");
+		pSession.execute(lDelete);
+
+		SimpleStatement lInsertIfExists = new SimpleStatement(
+				"INSERT INTO hotels (id, name, phone) VALUES (?, ?, ?) IF NOT EXISTS", "ABC123",
+				"Super Hotel at WestWorld", "1-123-345-567");
+		ResultSet lResultSet = pSession.execute(lInsertIfExists);
+		boolean lWasApplied = lResultSet.wasApplied();
+		if (lWasApplied)
+		{
+			Row lRow = lResultSet.one();
+			boolean lRowApplied = lRow.getBool("[applied]");
+			this.logger.info("row applied: %s", String.valueOf(lRowApplied));
+		}
+		else
+		{
+			this.logger.info("already exists: %s", "ABC123");
+		}
+		lResultSet = pSession.execute(lInsertIfExists);
+		lWasApplied = lResultSet.wasApplied();
+		this.logger.info("2nd was applied: %s", String.valueOf(lWasApplied));
 	}
 }
