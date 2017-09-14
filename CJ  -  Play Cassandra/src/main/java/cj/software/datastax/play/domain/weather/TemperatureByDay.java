@@ -1,13 +1,14 @@
 package cj.software.datastax.play.domain.weather;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.datastax.driver.core.LocalDate;
+import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
@@ -26,8 +27,8 @@ public class TemperatureByDay implements Serializable
 	private LocalDate date;
 
 	@ClusteringColumn
-	@Column(name = "event_time")
-	private Date eventTime;
+	@Column(name = "event_time", codec = InstantCodec.class)
+	private Instant eventTime;
 
 	private String temperature;
 
@@ -51,12 +52,12 @@ public class TemperatureByDay implements Serializable
 		this.date = pDate;
 	}
 
-	public Date getEventTime()
+	public Instant getEventTime()
 	{
 		return this.eventTime;
 	}
 
-	public void setEventTime(Date pEventTime)
+	public void setEventTime(Instant pEventTime)
 	{
 		this.eventTime = pEventTime;
 	}

@@ -4,10 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.extras.codecs.jdk8.ZonedDateTimeCodec;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 
@@ -42,7 +39,6 @@ public class SelectTempsByDayWithDomainMapping
 		try (Cluster lCluster = Cluster.builder().addContactPoint(lHostname).build())
 		{
 			this.logger.info("connected!");
-			this.setupCodecs(lCluster);
 			this.logger.info("now open session on keyspace \"%s\"", lKeyspaceName);
 			try (Session lSession = lCluster.connect(lKeyspaceName))
 			{
@@ -62,13 +58,5 @@ public class SelectTempsByDayWithDomainMapping
 		{
 			this.logger.info(bTemp.toString());
 		}
-	}
-
-	private void setupCodecs(Cluster pCluster)
-	{
-		this.logger.info("register additional codecs...");
-		TupleType lTupleType = pCluster.getMetadata().newTupleType(DataType.timestamp(), DataType.varchar());
-		pCluster.getConfiguration().getCodecRegistry().register(new ZonedDateTimeCodec(lTupleType));
-		this.logger.info("codecs registered");
 	}
 }
