@@ -1,4 +1,4 @@
-package cj.software.datastax.play.hotel;
+package cj.software.datastax.play.logic.hotel;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 

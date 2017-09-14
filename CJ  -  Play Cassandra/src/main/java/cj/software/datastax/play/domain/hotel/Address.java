@@ -1,4 +1,4 @@
-package cj.software.datastax.play.domain;
+package cj.software.datastax.play.domain.hotel;
 
 import com.datastax.driver.mapping.annotations.Field;
 import com.datastax.driver.mapping.annotations.UDT;

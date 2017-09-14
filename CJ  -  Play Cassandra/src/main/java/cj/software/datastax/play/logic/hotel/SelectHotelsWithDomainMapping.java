@@ -1,4 +1,4 @@
-package cj.software.datastax.play.hotel;
+package cj.software.datastax.play.logic.hotel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,15 +8,15 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 
-import cj.software.datastax.play.domain.Hotel;
+import cj.software.datastax.play.domain.hotel.Hotel;
 
-public class WithDomainMapping
+public class SelectHotelsWithDomainMapping
 {
 	private Logger logger = LogManager.getFormatterLogger();
 
 	public static void main(String[] pArgs)
 	{
-		WithDomainMapping lInstance = new WithDomainMapping();
+		SelectHotelsWithDomainMapping lInstance = new SelectHotelsWithDomainMapping();
 		lInstance.doSomeThings();
 	}
 

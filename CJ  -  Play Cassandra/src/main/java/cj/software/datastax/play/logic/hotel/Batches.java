@@ -1,4 +1,4 @@
-package cj.software.datastax.play.hotel;
+package cj.software.datastax.play.logic.hotel;
 
 import java.util.List;
 

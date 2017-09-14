@@ -1,4 +1,4 @@
-package cj.software.datastax.play.domain;
+package cj.software.datastax.play.domain.hotel;
 
 import java.util.Collections;
 import java.util.Set;
