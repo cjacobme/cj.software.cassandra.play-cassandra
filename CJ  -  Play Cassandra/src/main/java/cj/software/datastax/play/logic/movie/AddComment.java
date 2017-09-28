@@ -14,6 +14,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.utils.UUIDs;
+import com.datastax.driver.mapping.MappingManager;
 
 import cj.software.datastax.play.domain.movie.Movie;
 import cj.software.datastax.play.domain.movie.User;
@@ -27,7 +28,7 @@ public class AddComment
 		try
 		{
 			AddComment lInstance = new AddComment();
-			lInstance.addComment();
+			lInstance.addComments();
 		}
 		catch (Throwable pException)
 		{
@@ -35,7 +36,7 @@ public class AddComment
 		}
 	}
 
-	private void addComment()
+	private void addComments()
 	{
 		String lHostname = System.getProperty("host");
 		if (lHostname == null)
@@ -69,6 +70,9 @@ public class AddComment
 						this.addComment(lSession, bUser, bMovie, "Comment " + OffsetDateTime.now(), lLongText);
 					}
 				}
+
+				MappingManager lMappingManager = new MappingManager(lSession);
+				this.addMovie(lSession, lMappingManager);
 			}
 		}
 	}
@@ -119,5 +123,13 @@ public class AddComment
 		Statement lStmt = new SimpleStatement(lCQL);
 		lResult.add(lStmt);
 		return lResult;
+	}
+
+	private void addMovie(Session pSession, MappingManager pMappingManager)
+	{
+		MovieAccessor lMovieAccessor = pMappingManager.createAccessor(MovieAccessor.class);
+		UUID lUUID = UUID.fromString("02f42921-7c01-45a4-8d42-c7b0082f5464");
+		lMovieAccessor.addMovie(lUUID, "Wolfgang Petersen", "Das Boot", 1984);
+		this.logger.info("Movie \"%s\" mit UUID \"%s\" hinzugefügt", "Das Boot", lUUID);
 	}
 }
