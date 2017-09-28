@@ -12,6 +12,7 @@ import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 
 import cj.software.datastax.play.domain.movie.Movie;
+import cj.software.datastax.play.domain.movie.User;
 
 public class SelectBasics
 {
@@ -58,6 +59,11 @@ public class SelectBasics
 				{
 					this.logger.info(bMovie);
 				}
+				List<User> lUsers = this.selectUsers(lSession);
+				for (User bUser : lUsers)
+				{
+					this.logger.info(bUser);
+				}
 			}
 		}
 	}
@@ -71,6 +77,16 @@ public class SelectBasics
 		List<Movie> lResult = new ArrayList<>();
 		lList.forEach(m -> lResult.add(m));
 		return lResult;
+	}
 
+	public List<User> selectUsers(Session pSession)
+	{
+		this.logger.info("now start to select all users");
+		MappingManager lMappingManager = new MappingManager(pSession);
+		UserAccessor lUserAccessor = lMappingManager.createAccessor(UserAccessor.class);
+		Result<User> lList = lUserAccessor.listUsers();
+		List<User> lResult = new ArrayList<>();
+		lList.forEach(pUser -> lResult.add(pUser));
+		return lResult;
 	}
 }
