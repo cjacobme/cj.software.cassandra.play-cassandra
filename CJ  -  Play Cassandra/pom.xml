@@ -68,4 +68,7 @@
 			<version>${log4j2.version}</version>
 		</dependency>
 	</dependencies>
+	<scm>
+		<url>git@github.com:cjacobme/cj.software.cassandra.play-cassandra</url>
+	</scm>
 </project>
